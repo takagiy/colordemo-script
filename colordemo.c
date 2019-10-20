@@ -84,7 +84,7 @@ int colorid(char *color) {
     return 9;
   }
   else {
-    return 0;
+    return -1;
   }
 }
 
@@ -109,7 +109,7 @@ void parse_cmd(char_provider next_char) {
     parse_word(next_char);
     start_context_bg_color(word);
   }
-  else {
+  else if(colorid(word) != -1) {
     start_context_fg_color(word);
   }
   if(c != ';') {
