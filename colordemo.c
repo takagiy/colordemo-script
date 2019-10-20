@@ -80,27 +80,37 @@ int colorid(char *color) {
   else if(strcmp(color, "white") == 0) {
     return 7;
   }
+  else if(strcmp(color, "normal") == 0) {
+    return 9;
+  }
   else {
     return 0;
   }
 }
 
-void set_context_bg_color(char *color) {
-  printf("\e[4%dm", colorid(color));
+void start_context(int id) {
+  printf("\e[%dm", id);
 }
 
-void set_context_fg_color(char *color) {
-  printf("\e[3%dm", colorid(color));
+void start_context_bg_color(char *color) {
+  start_context(40 + colorid(color));
+}
+
+void start_context_fg_color(char *color) {
+  start_context(30 + colorid(color));
 }
 
 void parse_cmd(char_provider next_char) {
   parse_word(next_char);
-  if(strcmp(word, "bg") == 0) {
+  if(strcmp(word, "bold") == 0) {
+    start_context(1);
+  }
+  else if(strcmp(word, "bg") == 0) {
     parse_word(next_char);
-    set_context_bg_color(word);
+    start_context_bg_color(word);
   }
   else {
-    set_context_fg_color(word);
+    start_context_fg_color(word);
   }
   if(c != ';') {
     parse_cmd(next_char);
