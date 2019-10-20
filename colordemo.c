@@ -1,0 +1,135 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdbool.h>
+#include <string.h>
+
+typedef bool (char_provider)(void);
+
+char *string;
+
+char *word = NULL;
+
+size_t word_cap;
+
+char c;
+
+bool string_stream(void) {
+  c = *(string++);
+  return c != '\0';
+}
+
+bool is_whitespace(char c) {
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
+void parse_whitespace(char_provider *next_char) {
+  while(next_char() && is_whitespace(c));
+}
+
+void parse_text(char_provider *next_char) {
+  while(next_char() && (c != '<' && c != '>')) {
+    putchar(c);
+  }
+}
+
+void realloc_word(size_t new_cap) {
+  word_cap = new_cap;
+  word = (char *)realloc(word, new_cap);
+}
+
+void set_word(size_t idx, char c) {
+  while(idx + 1 > word_cap) {
+    realloc_word(word_cap * 2);
+  }
+  word[idx] = c;
+}
+
+void parse_word(char_provider next_char) {
+  parse_whitespace(next_char);
+  bool nc = true;
+  size_t i;
+  for(i = 0; nc && c != ';' && !is_whitespace(c); ++i, nc = next_char()) {
+    set_word(i, c);
+  }
+  set_word(i, '\0');
+}
+
+int colorid(char *color) {
+  if(strcmp(color, "black") == 0) {
+    return 0;
+  }
+  else if(strcmp(color, "red") == 0) {
+    return 1;
+  }
+  else if(strcmp(color, "green") == 0) {
+    return 2;
+  }
+  else if(strcmp(color, "yellow") == 0) {
+    return 3;
+  }
+  else if(strcmp(color, "blue") == 0) {
+    return 4;
+  }
+  else if(strcmp(color, "megenta") == 0) {
+    return 5;
+  }
+  else if(strcmp(color, "cyan") == 0) {
+    return 6;
+  }
+  else if(strcmp(color, "white") == 0) {
+    return 7;
+  }
+  else {
+    return 0;
+  }
+}
+
+void set_context_bg_color(char *color) {
+  printf("\e[4%dm", colorid(color));
+}
+
+void set_context_fg_color(char *color) {
+  printf("\e[3%dm", colorid(color));
+}
+
+void parse_cmd(char_provider next_char) {
+  parse_word(next_char);
+  if(strcmp(word, "bg") == 0) {
+    parse_word(next_char);
+    set_context_bg_color(word);
+  }
+  else {
+    set_context_fg_color(word);
+  }
+  if(c != ';') {
+    parse_cmd(next_char);
+  }
+}
+
+void pop_context() {}
+
+void parse_script(char_provider *next_char) {
+  parse_text(next_char);
+  switch (c) {
+    case '<':
+      parse_cmd(next_char);
+      break;
+    case '>':
+      pop_context();
+      break;
+  }
+  if(c != '\0') {
+    parse_script(next_char);
+  }
+}
+
+int main(int argc, char *args[]) {
+  realloc_word(10);
+  string = args[1];
+  if(argc > 1) {
+    parse_script(string_stream);
+  }
+  free(word);
+  return 0;
+}
