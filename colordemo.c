@@ -24,13 +24,11 @@ bool is_whitespace(char c) {
 }
 
 void parse_whitespace(char_provider *next_char) {
-  while(next_char() && is_whitespace(c));
+  while(is_whitespace(c) && next_char());
 }
 
 void parse_text(char_provider *next_char) {
-  while(next_char() && (c != '<' && c != '>')) {
-    putchar(c);
-  }
+  while(c != '<' && c != '>' && (putchar(c), next_char()));
 }
 
 void realloc_word(size_t new_cap) {
@@ -46,6 +44,7 @@ void set_word(size_t idx, char c) {
 }
 
 void parse_word(char_provider next_char) {
+  next_char();
   parse_whitespace(next_char);
   bool nc = true;
   size_t i;
@@ -120,6 +119,9 @@ void parse_cmd(char_provider next_char) {
 void pop_context() {}
 
 void parse_script(char_provider *next_char) {
+  if(c == '\0') {
+    return;
+  }
   parse_text(next_char);
   switch (c) {
     case '<':
@@ -129,15 +131,15 @@ void parse_script(char_provider *next_char) {
       pop_context();
       break;
   }
-  if(c != '\0') {
-    parse_script(next_char);
-  }
+  next_char();
+  parse_script(next_char);
 }
 
 int main(int argc, char *args[]) {
   realloc_word(10);
-  string = args[1];
   if(argc > 1) {
+    string = args[1];
+    string_stream();
     parse_script(string_stream);
   }
   free(word);
