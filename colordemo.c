@@ -44,7 +44,6 @@ void set_word(size_t idx, char c) {
 }
 
 void parse_word(char_provider next_char) {
-  next_char();
   parse_whitespace(next_char);
   bool nc = true;
   size_t i;
@@ -111,7 +110,10 @@ void parse_cmd(char_provider next_char) {
   else if(colorid(word) != -1) {
     start_context_fg_color(word);
   }
-  if(c != ';') {
+  if(c == ';') {
+    next_char();
+  }
+  else {
     parse_cmd(next_char);
   }
 }
@@ -125,13 +127,14 @@ void parse_script(char_provider *next_char) {
   parse_text(next_char);
   switch (c) {
     case '<':
+      next_char();
       parse_cmd(next_char);
       break;
     case '>':
+      next_char();
       pop_context();
       break;
   }
-  next_char();
   parse_script(next_char);
 }
 
