@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include "./stack.c"
 
 typedef bool (char_provider)(void);
 
@@ -13,6 +14,14 @@ char *word = NULL;
 size_t word_cap;
 
 char c;
+
+stack_t context;
+
+int bg_color;
+
+int fg_color;
+
+bool bold;
 
 bool string_stream(void) {
   c = *(string++);
@@ -86,29 +95,50 @@ int colorid(char *color) {
   }
 }
 
-void start_context(int id) {
-  printf("\e[%dm", id);
+void start_context(void) {
+  stack_push(&context, -1);
+  stack_push(&context, fg_color);
+  stack_push(&context, bg_color);
+  if(bold) {
+    stack_push(&context, bold);
+  }
 }
 
-void start_context_bg_color(char *color) {
-  start_context(40 + colorid(color));
+void end_context(void) {
+  printf("\e[0m");
+  char style;
+  bool empty;
+  while((style = stack_pop(&context, &empty), true) && !empty && style != -1) {
+    printf("\e[%dm", style);
+  }
 }
 
-void start_context_fg_color(char *color) {
-  start_context(30 + colorid(color));
+void set_context_bold(bool b) {
+  bold = b;
+  (void)(b && printf("\e[1m"));
+}
+
+void set_context_bg_color(int color) {
+  fg_color = 40 + color;
+  printf("\e[%dm", fg_color);
+}
+
+void set_context_fg_color(int color) {
+  bg_color = 30 + color;
+  printf("\e[%dm", bg_color);
 }
 
 void parse_cmd(char_provider next_char) {
   parse_word(next_char);
   if(strcmp(word, "bold") == 0) {
-    start_context(1);
+    set_context_bold(true);
   }
   else if(strcmp(word, "bg") == 0) {
     parse_word(next_char);
-    start_context_bg_color(word);
+    set_context_bg_color(colorid(word));
   }
   else if(colorid(word) != -1) {
-    start_context_fg_color(word);
+    set_context_fg_color(colorid(word));
   }
   if(c == ';') {
     next_char();
@@ -118,8 +148,6 @@ void parse_cmd(char_provider next_char) {
   }
 }
 
-void pop_context() {}
-
 void parse_script(char_provider *next_char) {
   if(c == '\0') {
     return;
@@ -127,18 +155,23 @@ void parse_script(char_provider *next_char) {
   parse_text(next_char);
   switch (c) {
     case '<':
+      start_context();
       next_char();
       parse_cmd(next_char);
       break;
     case '>':
       next_char();
-      pop_context();
+      end_context();
       break;
   }
   parse_script(next_char);
 }
 
 int main(int argc, char *args[]) {
+  start_context();
+  set_context_fg_color(9);
+  set_context_bg_color(9);
+  set_context_bold(false);
   realloc_word(10);
   if(argc > 1) {
     string = args[1];
