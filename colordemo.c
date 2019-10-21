@@ -78,7 +78,7 @@ int colorid(char *color) {
   else if(strcmp(color, "blue") == 0) {
     return 4;
   }
-  else if(strcmp(color, "megenta") == 0) {
+  else if(strcmp(color, "magenta") == 0) {
     return 5;
   }
   else if(strcmp(color, "cyan") == 0) {
