@@ -104,15 +104,6 @@ void start_context(void) {
   }
 }
 
-void end_context(void) {
-  printf("\e[0m");
-  char style;
-  bool empty;
-  while((style = stack_pop(&context, &empty), true) && !empty && style != -1) {
-    printf("\e[%dm", style);
-  }
-}
-
 void set_context_bold(bool b) {
   bold = b;
   (void)(b && printf("\e[1m"));
@@ -126,6 +117,34 @@ void set_context_bg_color(int color) {
 void set_context_fg_color(int color) {
   bg_color = 30 + color;
   printf("\e[%dm", bg_color);
+}
+
+void set_context_style(int style) {
+  if(style == 1) {
+    set_context_bold(true);
+  }
+  else if(style >= 30 && style < 40) {
+    set_context_fg_color(style % 30);
+  }
+  else if(style >= 40 && style < 50) {
+    set_context_bg_color(style % 40);
+  }
+}
+
+void clear_context_style(void) {
+  printf("\e[0m");
+  fg_color = 9;
+  bg_color = 9;
+  bold = false;
+}
+
+void end_context(void) {
+  clear_context_style();
+  char style;
+  bool empty;
+  while((style = stack_pop(&context, &empty), true) && !empty && style != -1) {
+    set_context_style(style);
+  }
 }
 
 void parse_cmd(char_provider next_char) {
