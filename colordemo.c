@@ -169,6 +169,8 @@ void parse_cmd(char_provider next_char) {
   if(c == ' ') {
     next_char();
   }
+  else if(c == '>') {
+  }
   else {
     parse_cmd(next_char);
   }
