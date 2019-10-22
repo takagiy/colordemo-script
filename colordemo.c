@@ -205,6 +205,7 @@ int main(int argc, char *args[]) {
     string_stream();
     parse_script(string_stream);
   }
+  printf("\n");
   free(word);
   return 0;
 }
