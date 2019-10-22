@@ -55,10 +55,9 @@ void set_word(size_t idx, char c) {
 }
 
 void parse_word(char_provider next_char) {
-  parse_whitespace(next_char);
   bool nc = true;
   size_t i;
-  for(i = 0; nc && c != ';' && !is_whitespace(c); ++i, nc = next_char()) {
+  for(i = 0; nc && c != '_' && !is_whitespace(c); ++i, nc = next_char()) {
     set_word(i, c);
   }
   set_word(i, '\0');
@@ -164,11 +163,12 @@ void parse_cmd(char_provider next_char) {
   else if(colorid(word) != -1) {
     set_context_fg_color(colorid(word));
   }
-  if(c == ';') {
+  if(c == '_') {
     next_char();
+    parse_cmd(next_char);
   }
   else {
-    parse_cmd(next_char);
+    next_char();
   }
 }
 
@@ -179,8 +179,9 @@ void parse_script(char_provider *next_char) {
   parse_text(next_char);
   switch (c) {
     case '<':
-      start_context();
       next_char();
+      parse_whitespace(next_char);
+      start_context();
       parse_cmd(next_char);
       break;
     case '>':
