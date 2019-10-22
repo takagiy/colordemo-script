@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <string.h>
+#include <time.h>
+#include "thanks/mt19937ar.c"
 #include "./stack.c"
 
 typedef bool (char_provider)(void);
@@ -89,6 +91,9 @@ int colorid(char *color) {
   }
   else if(strcmp(color, "normal") == 0) {
     return 9;
+  }
+  else if(strcmp(color, "random") == 0) {
+    return genrand_int32() % 10;
   }
   else {
     return -1;
@@ -187,6 +192,7 @@ void parse_script(char_provider *next_char) {
 }
 
 int main(int argc, char *args[]) {
+  init_genrand((unsigned int)time(NULL));
   start_context();
   set_context_fg_color(9);
   set_context_bg_color(9);
