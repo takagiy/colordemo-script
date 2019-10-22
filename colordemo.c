@@ -57,10 +57,13 @@ void set_word(size_t idx, char c) {
 void parse_word(char_provider next_char) {
   bool nc = true;
   size_t i;
-  for(i = 0; nc && c != '_' && !is_whitespace(c); ++i, nc = next_char()) {
+  for(i = 0; nc && c != '_' && c != '>' && !is_whitespace(c); ++i, nc = next_char()) {
     set_word(i, c);
   }
   set_word(i, '\0');
+  if(c == '_') {
+    next_char();
+  }
 }
 
 int colorid(char *color) {
@@ -114,13 +117,13 @@ void set_context_bold(bool b) {
 }
 
 void set_context_bg_color(int color) {
-  fg_color = 40 + color;
-  printf("\e[%dm", fg_color);
+  bg_color = 40 + color;
+  printf("\e[%dm", bg_color);
 }
 
 void set_context_fg_color(int color) {
-  bg_color = 30 + color;
-  printf("\e[%dm", bg_color);
+  fg_color = 30 + color;
+  printf("\e[%dm", fg_color);
 }
 
 void set_context_style(int style) {
@@ -163,12 +166,11 @@ void parse_cmd(char_provider next_char) {
   else if(colorid(word) != -1) {
     set_context_fg_color(colorid(word));
   }
-  if(c == '_') {
+  if(c == ' ') {
     next_char();
-    parse_cmd(next_char);
   }
   else {
-    next_char();
+    parse_cmd(next_char);
   }
 }
 
