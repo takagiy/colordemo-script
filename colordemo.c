@@ -201,11 +201,31 @@ int main(int argc, char *args[]) {
   set_context_bold(false);
   realloc_word(10);
   if(argc > 1) {
-    string = args[1];
-    string_stream();
-    parse_script(string_stream);
+    size_t repeat = 1;
+    for(size_t I = 0; I < repeat; ++I) {
+      for(size_t i = 1; i < argc; ++i) {
+        string = args[i];
+	if(strcmp(string, "-r") * strcmp(string, "--repeat") == 0) {
+	  if(argc <= i + 1) {
+            printf("Parameter for \"%s\" is missing.", string);
+	    exit(1);
+	  }
+	  char *remaining;
+	  long r = strtol(args[i + 1], &remaining, 10);
+	  if(*remaining != '\0' || r < 0) {
+            printf("\"%s\" is not a positive integer.", args[i + 1]);
+	    exit(1);
+	  }
+	  repeat = r;
+          ++i;
+	  continue;
+	}
+        string_stream();
+        parse_script(string_stream);
+        printf("\n");
+      }
+    }
   }
-  printf("\n");
   free(word);
   return 0;
 }
