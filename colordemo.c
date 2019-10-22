@@ -192,7 +192,9 @@ void parse_script(char_provider *next_char) {
 }
 
 int main(int argc, char *args[]) {
-  init_genrand((unsigned int)time(NULL));
+  struct timespec t;
+  timespec_get(&t, TIME_UTC);
+  init_genrand(t.tv_nsec ^ t.tv_sec);
   start_context();
   set_context_fg_color(9);
   set_context_bg_color(9);
