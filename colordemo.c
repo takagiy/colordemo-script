@@ -184,7 +184,6 @@ void parse_script(char_provider *next_char) {
   switch (c) {
     case '<':
       next_char();
-      parse_whitespace(next_char);
       start_context();
       parse_cmd(next_char);
       break;
