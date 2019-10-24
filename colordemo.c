@@ -199,10 +199,6 @@ int main(int argc, char *args[]) {
   struct timespec t;
   timespec_get(&t, TIME_UTC);
   init_genrand(t.tv_nsec ^ t.tv_sec);
-  start_context();
-  set_context_fg_color(9);
-  set_context_bg_color(9);
-  set_context_bold(false);
   realloc_word(10);
   if(argc > 1) {
     size_t repeat = 1;
@@ -225,6 +221,10 @@ int main(int argc, char *args[]) {
 	  continue;
 	}
         string_stream();
+        start_context();
+        set_context_fg_color(9);
+        set_context_bg_color(9);
+        set_context_bold(false);
         parse_script(string_stream);
         printf("\n");
       }
